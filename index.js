@@ -159,11 +159,6 @@
                 response.on('data', function (data) {
                     allData.push(data);
                 });
-                response.on('error', function () {
-                    if (done) {
-                        done(null, response.headers || {});
-                    }
-                });
                 response.on('end', function () {
                     // convert all data
                     allData = allData.join('');
@@ -181,6 +176,11 @@
                 });
 
 
+            }).on('error', function (err) {
+               nestExports.logger.error('post', { exception: err });
+                if (done) {
+                    done(null, {});
+                }
             });
         request.write(post_data);
         request.end();
@@ -210,12 +210,6 @@
                 response.on('data', function (data) {
                     allData.push(data);
                 });
-                response.on('error', function (err) {
-                   nestExports.logger.error('get', { exception: err });
-                    if (done) {
-                        done(null);
-                    }
-                });
                 response.on('end', function () {
                     // convert all data
                     allData = allData.join('');
@@ -233,8 +227,12 @@
                     }
 
                 });
-            });
-        request.end();
+            }).on('error', function (err) {
+               nestExports.logger.error('get', { exception: err });
+                if (done) {
+                    done(null);
+                }
+            }).end();
     };
 
     var fetchCurrentStatus = function (done) {
