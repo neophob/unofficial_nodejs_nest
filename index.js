@@ -70,6 +70,9 @@
                   nestSession = data;
                   nestExports.session = data;
                   nestSession.urls.transport_url = url.parse(nestSession.urls.transport_url);
+                  if (!nestSession.urls.transport_url) {
+                    return done(new Error('unable to parse transport_url in ' + JSON.stringify(nestSession.urls)));
+                  }
 
                   if (typeof done === 'function') {
                       done(null, data);
