@@ -193,6 +193,12 @@
     var nestGet = function (path, done) {
         var allData = [];
 
+        if ((!nestSession) || (!nestSession.urls) || (!nestSession.urls.transport_url)) {
+          return setTimeout(function() {
+               nestExports.logger.error('get', { exception: new Error('invalid session information') });
+                if (!!done) done(null);
+          }, 0);
+        }
         var options = {
             host:nestSession.urls.transport_url.hostname,
             port:nestSession.urls.transport_url.port,
