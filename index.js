@@ -484,7 +484,8 @@
         };
 
         if (((fanMode === 'on') && (!!time)) || (fanMode === 'duty-cycle')) {
-            if (fanMode === 'duty-cycle') body.fan_timer_duration = Math.round(time / 1000);
+            if (fanMode === 'on') delete(body.fan_mode);
+            body.fan_timer_duration = Math.round(time / 1000);
             body.fan_timer_timeout = Math.round((Date.now() + time) / 1000);
         }
 
