@@ -410,6 +410,10 @@
             deviceId = getFirstDeviceId();
         }
 
+        if (!isDeviceId(deviceId)) {
+            throw new Error('Invalid deviceId: '+deviceId);
+        }
+
         var body = {
             'target_temperature':tempC
         };
