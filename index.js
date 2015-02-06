@@ -20,12 +20,11 @@
  */
 
 (function () {
-    "use strict";
+    'use strict';
 
     var https = require('https'),
         queryString = require('querystring'),
-        url = require('url'),
-        util = require('util');
+        url = require('url');
 
 
     var nestSession = {};
@@ -61,7 +60,9 @@
           body: { 'username': username, 'password': password },
           done: function(data) {
               if (!data) {
-                  if (typeof done === 'function') return done(new Error('parse error'), null);
+                  if (typeof done === 'function') {
+                    return done(new Error('parse error'), null);
+                  }
               } else if (data.error) {
                   if (typeof done === 'function') {
                       done(new Error(data.error_description), null);
@@ -118,7 +119,7 @@
             headers = settings.headers;
             done = settings.done;
         } else {
-            throw new Error("Settings I need to function properly!");
+            throw new Error('Settings I need to function properly!');
         }
 
         // convert to a form url encoded body
@@ -196,7 +197,9 @@
         if ((!nestSession) || (!nestSession.urls) || (!nestSession.urls.transport_url)) {
           return setTimeout(function() {
                nestExports.logger.error('get', { exception: new Error('invalid session information') });
-                if (!!done) done(null);
+                if (!!done) {
+                    done(null);
+                }
           }, 0);
         }
         var options = {
@@ -247,13 +250,14 @@
     var fetchCurrentStatus = function (done) {
         nestGet('/v2/mobile/' + nestSession.user, function (data) {
             if (!data) {
-                return nestExports.logger.error('fetchCurrentStatus');
+                //return nestExports.logger.error('fetchCurrentStatus');
+                done(new Error('fetchCurrentStatus failed: no data'), null);
             }
 
             nestExports.lastStatus = data;
 
             if (done) {
-                done(data);
+                done(null, data);
             }
 
 
@@ -331,7 +335,7 @@
                     pushKeys(keys, key, 'device');
                     break;
                 default:
-                    throw new Error("Unknown subscription type: " + key);
+                    throw new Error('Unknown subscription type: ' + key);
             }
         }
 
@@ -406,11 +410,6 @@
             deviceId = getFirstDeviceId();
         }
 
-        // likely passed in a F temp, so just convert it.
-        if (tempC > 45) {
-            tempC = fahrenheitToCelsius(tempC);
-        }
-
         var body = {
             'target_temperature':tempC
         };
@@ -425,7 +424,7 @@
             body:JSON.stringify(body),
             headers:headers,
             done:function (data) {
-                nestExports.logger.debug('Set temperature');
+                nestExports.logger.debug('Set temperature'+data);
             }
         });
     };
@@ -475,6 +474,10 @@
             throw new Error('Missing required deviceId');
         }
 
+        if (!isDeviceId(deviceId)) {
+            throw new Error('Invalid deviceId: '+deviceId);
+        }
+
         if (! (fanMode in fanModes)) {
             throw new Error('Invalid fanMode: ' + fanMode);
         }
@@ -515,6 +518,10 @@
         deviceId = deviceId || getFirstDeviceId();
         if (!deviceId) {
             throw new Error('Missing required deviceId');
+        }
+
+        if (!isDeviceId(deviceId)) {
+            throw new Error('Invalid deviceId: '+deviceId);
         }
 
         if (! (tempType in temperatureTypes)) {
@@ -568,7 +575,7 @@
 
     function validateStatus() {
         if (!nestExports.lastStatus) {
-            throw new Error("Must call fetchStatus to initialize.");
+            throw new Error('Must call fetchStatus to initialize.');
         }
     }
 
@@ -647,11 +654,11 @@
         'getStructureId':getFirstStructureId,
         'getStructureIds':getStructureIds,
         'getDeviceIds':getDeviceIds,
-        'logger': { error   : function(msg, props) { console.log(msg); if (!!props) console.trace(props.exception); }
-                  , warning : function(msg, props) { console.log(msg); if (!!props) console.log(props);             }
-                  , notice  : function(msg, props) { console.log(msg); if (!!props) console.log(props);             }
-                  , info    : function(msg, props) { console.log(msg); if (!!props) console.log(props);             }
-                  , debug   : function(msg, props) { console.log(msg); if (!!props) console.log(props);             }
+        'logger': { error   : function(msg, props) { console.log(msg); if (!!props) console.trace(props.exception); },
+                    warning : function(msg, props) { console.log(msg); if (!!props) console.log(props);             },
+                    notice  : function(msg, props) { console.log(msg); if (!!props) console.log(props);             },
+                    info    : function(msg, props) { console.log(msg); if (!!props) console.log(props);             },
+                    debug   : function(msg, props) { console.log(msg); if (!!props) console.log(props);             }
                   }
     };
 
