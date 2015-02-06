@@ -1,3 +1,5 @@
+/*jshint camelcase: false */
+/*jshint -W069 */
 /*
  Copyright 2012 WiredPrairie.us
 
@@ -18,7 +20,6 @@
  FYI: Nest is a registered trademark of Nest Labs
 
  */
-
 (function () {
     'use strict';
 
@@ -389,11 +390,11 @@
                 },
                 error: function(res, error) {
                     nestExports.logger.debug('subscribe failed: '+error.message);
-                }
-        );
+                 }
+            }
+         );
 
-    };
-
+     };
     // if first parameter is not a deviceId, treats
     // it like a temperature, and sets the temperature
     // using that value (and then uses the first thermostat
@@ -509,7 +510,9 @@
         };
 
         if (((fanMode === 'on') && (!!time)) || (fanMode === 'duty-cycle')) {
-            if (fanMode === 'on') delete(body.fan_mode);
+            if (fanMode === 'on') {
+                delete(body.fan_mode);
+            }
             body.fan_timer_duration = Math.round(time / 1000);
             body.fan_timer_timeout = Math.round((Date.now() + time) / 1000);
         }
