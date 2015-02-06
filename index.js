@@ -182,9 +182,9 @@
 
             }).on('error', function (err) {
                nestExports.logger.error('post', { exception: err });
-                if (done) {
+               if (done) {
                     done(null, {});
-                }
+               }
             });
         request.write(post_data);
         request.end();
@@ -386,8 +386,10 @@
                     }
                     done();
 
+                },
+                error: function(res, error) {
+                    nestExports.logger.debug('subscribe failed: '+error.message);
                 }
-            }
         );
 
     };
@@ -398,7 +400,7 @@
     // found in your structure
     //      setTemperature(temp)
     //          equiv to setTemperature(getFirstDeviceId(), temp)
-    var setTemperature = function (deviceId, tempC) {
+    var setTemperature = function (deviceId, tempC, cb) {
         validateStatus();
 
         if (typeof tempC === 'undefined') {
@@ -429,12 +431,20 @@
             headers:headers,
             done:function (data) {
                 nestExports.logger.debug('Set temperature'+data);
+                if (cb) {
+                    cb(null, data);
+                }
+            },
+            error: function(res, error) {
+                if (cb) {
+                    cb(error);
+                }
             }
         });
     };
 
 
-    var setAway = function (away, structureId) {
+    var setAway = function (away, structureId, cb) {
         validateStatus();
 
         structureId = structureId || getFirstStructureId();
@@ -462,15 +472,23 @@
             headers:headers,
             done:function (data) {
                 nestExports.logger.debug('Set away to ' + away);
+                if (cb) {
+                    cb(null, data);
+                }
+            },
+            error: function(res, error) {
+                if (cb) {
+                    cb(error);
+                }
             }
         });
     };
 
-    var setHome = function (structureId) {
-        setAway(false, structureId);
+    var setHome = function (structureId, cb) {
+        setAway(false, structureId, cb);
     };
 
-    var setFanMode = function (deviceId, fanMode, time) {
+    var setFanMode = function (deviceId, fanMode, time, cb) {
         validateStatus();
 
         deviceId = deviceId || getFirstDeviceId();
@@ -502,21 +520,29 @@
             body:JSON.stringify(body),
             done:function (data) {
                 nestExports.logger.debug('Set fan mode to ' + fanMode);
+                if (cb) {
+                    cb(null, data);
+                }
+            },
+            error: function(res, error) {
+                if (cb) {
+                    cb(error);
+                }
             }
         };
 
         nestPost(postData);
     };
 
-    var setFanModeOn = function (deviceId) {
-        setFanMode(deviceId, fanModes.on);
+    var setFanModeOn = function (deviceId, cb) {
+        setFanMode(deviceId, fanModes.on, cb);
     };
 
-    var setFanModeAuto = function (deviceId) {
-        setFanMode(deviceId, fanModes.auto);
+    var setFanModeAuto = function (deviceId, cb) {
+        setFanMode(deviceId, fanModes.auto, cb);
     };
 
-    var setTargetTemperatureType = function(deviceId, tempType) {
+    var setTargetTemperatureType = function(deviceId, tempType, cb) {
         validateStatus();
 
         deviceId = deviceId || getFirstDeviceId();
@@ -548,9 +574,16 @@
             body: body,
             done: function(data) {
                 nestExports.logger.debug('Set temperature mode to  ' + tempType);
+                if (cb) {
+                    cb(null, data);
+                }
+
             },
             error: function(res, error) {
                 nestExports.logger.error('setTargetTemperatureType' + tempType, { exception: error });
+                if (cb) {
+                    cb(error);
+                }
             }
 
         };
