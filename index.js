@@ -76,9 +76,10 @@
                     return done(new Error('unable to parse transport_url in ' + JSON.stringify(nestSession.urls)));
                   }
 
-                  if (typeof done === 'function') {
+                  fetchCurrentStatus(done);
+/*                  if (typeof done === 'function') {
                       done(null, data);
-                  }
+                  }*/
               }
           }
       });
@@ -251,8 +252,10 @@
     var fetchCurrentStatus = function (done) {
         nestGet('/v2/mobile/' + nestSession.user, function (data) {
             if (!data) {
-                //return nestExports.logger.error('fetchCurrentStatus');
-                done(new Error('fetchCurrentStatus failed: no data'), null);
+                if (done) {
+                    done(new Error('fetchCurrentStatus failed: no data'));
+                }
+                return;
             }
 
             nestExports.lastStatus = data;
@@ -310,8 +313,6 @@
     }
 
     var subscribe = function (done, types) {
-        validateStatus();
-
         // always have something ...
         types = types || ['shared'];
         var body = {};
@@ -402,8 +403,6 @@
     //      setTemperature(temp)
     //          equiv to setTemperature(getFirstDeviceId(), temp)
     var setTemperature = function (deviceId, tempC, cb) {
-        validateStatus();
-
         if (typeof tempC === 'undefined') {
             tempC = deviceId;
             deviceId = null;
@@ -414,7 +413,10 @@
         }
 
         if (!isDeviceId(deviceId)) {
-            throw new Error('Invalid deviceId: '+deviceId);
+            if (cb) {
+                cb(new Error('Invalid deviceId: '+deviceId));
+            }
+            return;
         }
 
         var body = {
@@ -431,7 +433,6 @@
             body:JSON.stringify(body),
             headers:headers,
             done:function (data) {
-                nestExports.logger.debug('Set temperature'+data);
                 if (cb) {
                     cb(null, data);
                 }
@@ -446,11 +447,12 @@
 
 
     var setAway = function (away, structureId, cb) {
-        validateStatus();
-
         structureId = structureId || getFirstStructureId();
         if (!structureId) {
-            throw new Error('Missing required structureId');
+            if (cb) {
+                cb(new Error('Missing required structureId'));
+            }
+            return;
         }
 
         away = typeof away === 'undefined' ? true : away; // default to Away
@@ -471,10 +473,9 @@
             path:'/v2/put/structure.' + structureId,
             body:body,
             headers:headers,
-            done:function (data) {
-                nestExports.logger.debug('Set away to ' + away);
+            done:function () {
                 if (cb) {
-                    cb(null, data);
+                    cb(null, away);
                 }
             },
             error: function(res, error) {
@@ -490,19 +491,26 @@
     };
 
     var setFanMode = function (deviceId, fanMode, time, cb) {
-        validateStatus();
-
         deviceId = deviceId || getFirstDeviceId();
         if (!deviceId) {
-            throw new Error('Missing required deviceId');
+            if (cb) {
+                cb(new Error('Missing required deviceId'));
+            }
+            return;
         }
 
         if (!isDeviceId(deviceId)) {
-            throw new Error('Invalid deviceId: '+deviceId);
+            if (cb) {
+                cb(new Error('Invalid deviceId: '+deviceId));
+            }
+            return;
         }
 
-        if (! (fanMode in fanModes)) {
-            throw new Error('Invalid fanMode: ' + fanMode);
+        if (!(fanMode in fanModes)) {
+            if (cb) {
+                cb(new Error('Invalid fanMode: ' + fanMode));
+            }
+            return;
         }
 
         var body = {
@@ -546,19 +554,26 @@
     };
 
     var setTargetTemperatureType = function(deviceId, tempType, cb) {
-        validateStatus();
-
         deviceId = deviceId || getFirstDeviceId();
         if (!deviceId) {
-            throw new Error('Missing required deviceId');
+            if (cb) {
+                cb(new Error('Missing required deviceId'));
+            }
+            return;
         }
 
         if (!isDeviceId(deviceId)) {
-            throw new Error('Invalid deviceId: '+deviceId);
+            if (cb) {
+                cb(new Error('Invalid deviceId: '+deviceId));
+            }
+            return;
         }
 
-        if (! (tempType in temperatureTypes)) {
-            throw new Error('Invalid temperature type: ' + tempType);
+        if (!(tempType in temperatureTypes)) {
+            if (cb) {
+                cb(new Error('Invalid temperature type: ' + tempType));
+            }
+            return;
         }
 
         var body = JSON.stringify({
@@ -576,14 +591,12 @@
             headers: headers,
             body: body,
             done: function(data) {
-                nestExports.logger.debug('Set temperature mode to  ' + tempType);
                 if (cb) {
                     cb(null, data);
                 }
 
             },
             error: function(res, error) {
-                nestExports.logger.error('setTargetTemperatureType' + tempType, { exception: error });
                 if (cb) {
                     cb(error);
                 }
@@ -613,16 +626,8 @@
         return o1;
     }
 
-    function validateStatus() {
-        if (!nestExports.lastStatus) {
-            throw new Error('Must call fetchStatus to initialize.');
-        }
-    }
-
     // this just gets the first structure id, nothing fancy
     var getFirstStructureId = function () {
-        validateStatus();
-
         var allIds = getStructureIds();
         if (!allIds || allIds.length === 0) {
             return null;
@@ -632,7 +637,6 @@
     };
 
     var getStructureIds = function () {
-        validateStatus();
         var structures = nestExports.lastStatus.structure;
 
         var allIds = [];
@@ -647,8 +651,6 @@
     };
 
     var getFirstDeviceId = function () {
-        validateStatus();
-
         var allIds = getDeviceIds();
         if (!allIds || allIds.length === 0) {
             return null;
@@ -658,7 +660,6 @@
     };
 
     var getDeviceIds = function () {
-        validateStatus();
         var devices = nestExports.lastStatus.device;
 
         var allIds = [];
