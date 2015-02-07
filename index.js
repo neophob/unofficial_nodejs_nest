@@ -455,6 +455,13 @@
             return;
         }
 
+        if (!isStructureId(structureId)) {
+            if (cb) {
+                cb(new Error('Invalid structureId: '+structureId));
+            }
+            return;
+        }
+
         away = typeof away === 'undefined' ? true : away; // default to Away
 
         var body = {
@@ -632,43 +639,40 @@
         if (!allIds || allIds.length === 0) {
             return null;
         }
-
         return allIds[0];
     };
 
     var getStructureIds = function () {
         var structures = nestExports.lastStatus.structure;
-
         var allIds = [];
         for (var id in structures) {
             if (structures.hasOwnProperty(id)) {
                 allIds.push(id);
             }
         }
-
         return allIds;
-
     };
+
+    function isStructureId(structureId) {
+        return getStructureIds().indexOf(structureId) > -1;
+    }
 
     var getFirstDeviceId = function () {
         var allIds = getDeviceIds();
         if (!allIds || allIds.length === 0) {
             return null;
         }
-
         return allIds[0];
     };
 
     var getDeviceIds = function () {
         var devices = nestExports.lastStatus.device;
-
         var allIds = [];
         for (var id in devices) {
             if (devices.hasOwnProperty(id)) {
                 allIds.push(id);
             }
         }
-
         return allIds;
     };
 
