@@ -48,16 +48,22 @@ if (username && password) {
             for (var deviceId in data.device) {
                 if (data.device.hasOwnProperty(deviceId)) {
                     var device = data.shared[deviceId];
-                    console.log(util.format('%s [%s], Current temperature = %d F target=%d',
+                    console.log(util.format('%s [%s], Current temperature = %d°C target=%d°C',
                         device.name, deviceId,
-                        nest.ctof(device.current_temperature),
-                        nest.ctof(device.target_temperature)));
+                        device.current_temperature,
+                        device.target_temperature));
                 }
             }
             var ids = nest.getDeviceIds();
-            console.log(ids[0 ]+': set target temp to 26C°');
+            console.log(ids[0 ]+': set target temp to 25.5C°');
             nest.setTargetTemperatureType(ids[0], 'heat');
-            nest.setTemperature(ids[0], 26);
+            nest.setTemperature(ids[0], 25.5, function(error, res) {
+                if (error) {
+                    console.log('ERROR: '+JSON.stringify(error));
+                    return 2;
+                }
+                console.log('Reply: '+JSON.stringify(res));
+            });
             //nest.setTemperature(26);
             //nest.setFanModeAuto();
             //subscribe();
