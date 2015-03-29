@@ -170,7 +170,7 @@
                     allData = allData.join('');
                     if (allData && typeof allData === 'string' && allData.length > 0) {
                         try { allData = JSON.parse(allData); } catch(ex) {
-                            nestExports.logger.error('post', { exception: ex });
+                            nestExports.logger.error('nestPost invalid reply: '+JSON.stringify(allData), { exception: ex });
                             allData = null;
                         }
                     } else {
