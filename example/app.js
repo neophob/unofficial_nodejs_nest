@@ -56,7 +56,7 @@ if (username && password) {
             }
             var ids = nest.getDeviceIds();
             console.log(ids[0 ]+': set target temp to 25.5C°');
-            nest.setTargetTemperatureType(ids[0], 'heat');
+            //nest.setTargetTemperatureType(ids[0], 'heat');
             nest.setTemperature(ids[0], 25.5, function(error, res) {
                 if (error) {
                     console.log('ERROR: '+JSON.stringify(error));
