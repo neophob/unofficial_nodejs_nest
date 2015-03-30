@@ -105,7 +105,7 @@
         var allData = [];
         var post_data;
         var contentType;
-        var hostname, port, path, body, headers, done;
+        var hostname, port, path, body, headers, done, err;
 
         if (typeof settings === 'function') {
             // call the function and get the results, which
@@ -120,6 +120,7 @@
             body = settings.body || null;
             headers = settings.headers;
             done = settings.done;
+            err = settings.error;
         } else {
             throw new Error('Settings I need to function properly!');
         }
@@ -160,8 +161,13 @@
 
         var request = https.request(options,
             function (response) {
-
                 response.setEncoding('utf8');
+                if (response.statusCode > 399) {
+                    nestExports.logger.error('nestPost', 'Invalid Response Status Code: '+response.statusCode);
+                    if (err) {
+                        err(null, new Error('Response Status Code: '+response.statusCode));
+                    }
+                }
                 response.on('data', function (data) {
                     allData.push(data);
                 });
@@ -180,17 +186,14 @@
                         done(allData, response.headers || {});
                     }
                 });
-
-
             }).on('error', function (err) {
-               nestExports.logger.error('post', { exception: err });
+               nestExports.logger.error('nestPost', { exception: err });
                if (done) {
-                    done(null, {});
+                    done(err.message);
                }
             });
         request.write(post_data);
         request.end();
-
     };
 
     var nestGet = function (path, done) {
@@ -419,8 +422,15 @@
             return;
         }
 
+        function isNumber(o) {
+            return typeof o === 'number' && isFinite(o);
+        }
+        var tempAsNumeric = tempC;
+        if (!isNumber(tempC)) {
+            tempAsNumeric = parseFloat(tempC);
+        }
         var body = {
-            'target_temperature':tempC
+            'target_temperature':tempAsNumeric
         };
 
         var headers = {
@@ -699,11 +709,11 @@
         'getStructureId':getFirstStructureId,
         'getStructureIds':getStructureIds,
         'getDeviceIds':getDeviceIds,
-        'logger': { error   : function(msg, props) { console.log(msg); if (!!props) console.trace(props.exception); },
-                    warning : function(msg, props) { console.log(msg); if (!!props) console.log(props);             },
-                    notice  : function(msg, props) { console.log(msg); if (!!props) console.log(props);             },
-                    info    : function(msg, props) { console.log(msg); if (!!props) console.log(props);             },
-                    debug   : function(msg, props) { console.log(msg); if (!!props) console.log(props);             }
+        'logger': { error   : function(msg, props) { console.log(msg); if (!!props) console.log(props); },
+                    warning : function(msg, props) { console.log(msg); if (!!props) console.log(props); },
+                    notice  : function(msg, props) { console.log(msg); if (!!props) console.log(props); },
+                    info    : function(msg, props) { console.log(msg); if (!!props) console.log(props); },
+                    debug   : function(msg, props) { console.log(msg); if (!!props) console.log(props); }
                   }
     };
 
