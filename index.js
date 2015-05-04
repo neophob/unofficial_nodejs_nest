@@ -188,7 +188,7 @@
                 });
             }).on('error', function (err) {
                nestExports.logger.error('nestPost', { exception: err });
-                if (err) {
+                if (typeof err === 'function') {
                     err(null, new Error(err.message));
                 }
                if (done) {
