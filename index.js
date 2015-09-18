@@ -418,6 +418,11 @@
             deviceId = getFirstDeviceId();
         }
 
+        // likely passed in a F temp, so just convert it.
+        if (tempC > 45) {
+            tempC = fahrenheitToCelsius(tempC);
+        }
+        
         if (!isDeviceId(deviceId)) {
             if (cb) {
                 cb(new Error('Invalid deviceId: '+deviceId));
