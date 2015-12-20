@@ -337,6 +337,7 @@
                 case 'structure':
                 case 'user_alert_dialog':
                 case 'user_settings':
+                case 'quartz':
                     pushKeys(keys, key);
                     break;
                 case 'energy_latest':
@@ -371,7 +372,7 @@
                 done:function (data, headers) {
                     if (!data || !headers) {
                         // nothing to do apparently ....
-                        done();
+                        //done();
                         return;
                     }
                     var device = headers['x-nl-skv-key'];
@@ -408,7 +409,7 @@
     // found in your structure
     //      setTemperature(temp)
     //          equiv to setTemperature(getFirstDeviceId(), temp)
-    var setTemperature = function (deviceId, tempC, cb) {
+    var setTemperature = function (deviceId, tempC, cb, temperatureType) {
         if (typeof tempC === 'undefined') {
             tempC = deviceId;
             deviceId = null;
@@ -422,7 +423,7 @@
         if (tempC > 45) {
             tempC = fahrenheitToCelsius(tempC);
         }
-        
+
         if (!isDeviceId(deviceId)) {
             if (cb) {
                 cb(new Error('Invalid deviceId: '+deviceId));
@@ -437,9 +438,9 @@
         if (!isNumber(tempC)) {
             tempAsNumeric = parseFloat(tempC);
         }
-        var body = {
-            'target_temperature':tempAsNumeric
-        };
+        //'target_change_pending':true,
+        var body = {};
+        body[temperatureType] = tempAsNumeric;
 
         var headers = {
             'X-nl-base-version':nestExports.lastStatus['shared'][deviceId]['$version'],
@@ -463,6 +464,15 @@
         });
     };
 
+    var setTargetTemperature = function (deviceId, tempC, cb) {
+      setTemperature(deviceId, tempC, cb, 'target_temperature');
+    };
+    var setTargetTemperatureLow = function (deviceId, tempC, cb) {
+      setTemperature(deviceId, tempC, cb, 'target_temperature_low');
+    };
+    var setTargetTemperatureHigh = function (deviceId, tempC, cb) {
+      setTemperature(deviceId, tempC, cb, 'target_temperature_high');
+    };
 
     var setAway = function (away, structureId, cb) {
         structureId = structureId || getFirstStructureId();
@@ -701,7 +711,9 @@
     // exported function list
     var nestExports = {
         'login':login,
-        'setTemperature':setTemperature,
+        'setTemperature':setTargetTemperature,
+        'setTargetTemperatureLow':setTargetTemperatureLow,
+        'setTargetTemperatureHigh':setTargetTemperatureHigh,
         'setAway':setAway,
         'setHome':setHome,
         'setFanMode':setFanMode,
