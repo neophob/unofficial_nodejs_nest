@@ -372,7 +372,7 @@
                 done:function (data, headers) {
                     if (!data || !headers) {
                         // nothing to do apparently ....
-                        //done();
+                        done();
                         return;
                     }
                     var device = headers['x-nl-skv-key'];
